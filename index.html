@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | JEFF DEALS</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.85);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-hover: rgba(255, 255, 255, 0.15);
+            
+            --accent-bg: #FFFFFF;
+            --accent-text: #000000;
+            
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            --radius-sm: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+        }
+        
+        /* Login Screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .login-logo span {
+            font-size: 3rem;
+        }
+        
+        .login-logo h1 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-top: 12px;
+        }
+        
+        .login-logo p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            border-color: var(--glass-border-hover);
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: var(--font-body);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--glass-border-hover);
+            background: var(--glass-bg);
+        }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: black; }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.8125rem;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: var(--radius-sm);
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message.show { display: block; }
+        
+        /* Dashboard Layout */
+        .dashboard { display: none; }
+        .dashboard.active { display: block; }
+        .login-screen.hidden { display: none; }
+        
+        .dashboard-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .header-logo span { font-size: 1.5rem; }
+        
+        .header-logo h1 {
+            font-family: var(--font-display);
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+        
+        .header-badge {
+            padding: 4px 12px;
+            background: var(--info);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 9999px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+        }
+        
+        .user-info i { color: var(--text-muted); }
+        .user-info span { font-size: 0.875rem; color: var(--text-primary); }
+        
+        .dashboard-content {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+        
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .stat-card-header span {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .stat-card-header i {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+        }
+        
+        .stat-card-value {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        /* Sections */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            margin-bottom: 24px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .section-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-content {
+            padding: 24px;
+        }
+        
+        /* Listings Table */
+        .listings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .listings-table th,
+        .listings-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .listings-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+        }
+        
+        .listings-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .listings-table tr:hover td {
+            background: var(--glass-bg);
+        }
+        
+        .listing-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .listing-thumb {
+            width: 60px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            background: var(--bg-tertiary);
+        }
+        
+        .listing-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .listing-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-available { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .status-sold { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .status-reserved { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        
+        .badge-tag {
+            display: inline-flex;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 4px;
+        }
+        
+        .badge-hot { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-new { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .badge-verified { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.active { display: flex; }
+        
+        .modal {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            margin: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 9999px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: var(--glass-border);
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding: 20px 24px;
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d[...]
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            border-color: var(--glass-border-hover);
+            background: var(--bg-tertiary);
+        }
+        
+        .checkbox-item.checked {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.15);
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3), 0 2px 8px rgba(34, 197, 94, 0.2);
+        }
+        
+        .checkbox-item input {
+            display: none;
+        }
+        
+        .checkbox-item .checkmark {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--glass-border);
+            border-radius: 6px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .checkbox-item .checkmark i {
+            font-size: 12px;
+            color: transparent;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-item input:checked + .checkmark {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        .checkbox-item input:checked + .checkmark i {
+            color: white;
+        }
+        
+        .checkbox-item input:checked ~ .checkbox-label {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .checkbox-item .checkbox-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        /* Image Upload */
+        .image-upload {
+            border: 2px dashed var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .image-upload:hover {
+            border-color: var(--glass-border-hover);
+            background: var(--glass-bg);
+        }
+        
+        .image-upload.dragover {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .image-upload i {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        
+        .image-upload p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .image-upload span {
+            color: var(--info);
+            text-decoration: underline;
+        }
+        
+        .image-preview {
+            position: relative;
+            margin-top: 16px;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: var(--radius-md);
+        }
+        
+        .image-preview .remove-image {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Upload Progress */
+        .upload-progress {
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .upload-progress.active { display: block; }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--glass-border);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--info);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.warning { border-left: 3px solid var(--warning); }
+        
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        
+        .toast.success .toast-icon { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        
+        .toast-message {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+        
+        /* Responsive Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .user-info span {
+                display: none;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            
+            .listings-table th:nth-child(3),
+            .listings-table td:nth-child(3),
+            .listings-table th:nth-child(5),
+            .listings-table td:nth-child(5) {
+                display: none;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--glass-border);
+            border-top-color: var(--accent-bg);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="login-screen">
+        <div class="login-box">
+            <div class="login-logo">
+                <span>⚽</span>
+                <h1>JEFF DEALS</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            
+            <div class="error-message" id="login-error"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-input" id="login-email" placeholder="admin@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-input" id="login-password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In
+                </button>
+            </form>
+            
+            <p style="text-align: center; margin-top: 24px; font-size: 0.875rem; color: var(--text-muted);">
+                <a href="index.html" style="color: var(--text-primary);">← Back to Website</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <header class="dashboard-header">
+            <div class="header-left">
+                <a href="index.html" class="header-logo">
+                    <span>⚽</span>
+                    <h1>JEFF DEALS</h1>
+                </a>
+                <span class="header-badge">Admin</span>
+            </div>
+            
+            <div class="header-right">
+                <a href="index.html" class="btn btn-secondary btn-sm" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> View Site
+                </a>
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span id="user-email">[email protected]</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+        
+        <main class="dashboard-content">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span>Total Listings</span>
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div class="stat-card-value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span>Available</span>
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-card-value" id="stat-available">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span>Sold</span>
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-card-value" id="stat-sold">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span>Featured</span>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-card-value" id="stat-featured">0</div>
+                </div>
+            </div>
+            
+            
+            <!-- Site Settings Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cog"></i> Site Settings</h2>
+                    <button class="btn btn-primary btn-sm" onclick="saveSiteSettings()">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+                <div class="section-content" style="padding: 24px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <div class="form-group">
+                            <label>Site Name</label>
+                            <input type="text" id="setting-site-name" class="form-input" placeholder="JEFF DEALS" value="JEFF DEALS">
+                        </div>
+                        <div class="form-group">
+                            <label>WhatsApp Number</label>
+                            <input type="text" id="setting-whatsapp" class="form-input" placeholder="233550766072" value="233550766072">
+                        </div>
+                        <div class="form-group">
+                            <label>Hero Title (HTML allowed)</label>
+                            <input type="text" id="setting-hero-title" class="form-input" placeholder="Premium eFootball Accounts" value="Premium eFootball Accounts">
+                        </div>
+                        <div class="form-group">
+                            <label>Hero Subtitle</label>
+                            <input type="text" id="setting-hero-subtitle" class="form-input" placeholder="Buy & Sell Top-Tier Squads" value="Buy & Sell Top-Tier Squads">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Hero Image URL</label>
+                            <input type="text" id="setting-hero-image" class="form-input" placeholder="https://..." value="https://lh3.googleusercontent.com/d/1On-YvU63RaybGEKZBV-Hkv9eMmPg62Lp">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+                    <button class="btn btn-primary btn-sm" onclick="openAnnouncementModal()">
+                        <i class="fas fa-plus"></i> New Announcement
+                    </button>
+                </div>
+                <div class="section-content">
+                    <div id="announcements-list">
+                        <div class="loading"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Listings Section -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Account Listings</h2>
+                    <button class="btn btn-primary btn-sm" onclick="openListingModal()">
+                        <i class="fas fa-plus"></i> Add Account
+                    </button>
+                </div>
+                <div class="section-content">
+                    <div class="table-responsive">
+                        <table class="listings-table">
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Price (GHS)</th>
+                                    <th>Strength</th>
+                                    <th>Status</th>
+                                    <th>Badges</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listings-tbody">
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="loading"><div class="spinner"></div></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="toast-container"></div>
+    
+    <script>
+        // Placeholder JavaScript - add your functionality here
+        console.log('Dashboard loaded');
+    </script>
+</body>
+</html>
